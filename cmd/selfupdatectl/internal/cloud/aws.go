@@ -98,7 +98,7 @@ type progressAWS struct {
 	*os.File
 	file          string
 	contentLength int64
-	downloaded    int64
+	downloaded    atomic.Int64
 	ticker        int
 }
 
@@ -118,9 +118,9 @@ func (pa *progressAWS) ReadAt(p []byte, off int64) (int, error) {
 		return n, err
 	}
 
-	atomic.AddInt64(&pa.downloaded, int64(n))
+	downloaded := pa.downloaded.Add(int64(n))
 
-	fmt.Printf("\r%v: %v%% %c", pa.file, 100*pa.downloaded/(pa.contentLength*2), pa.tick())
+	fmt.Printf("\r%v: %v%% %c", pa.file, 100*downloaded/(pa.contentLength*2), pa.tick())
 
 	return n, err
 }
